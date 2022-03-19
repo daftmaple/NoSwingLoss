@@ -14,15 +14,15 @@
   "features": {
     "CountersPlus.CustomCounter": {
       "Name": "No Swing Loss Counter",
-      "CounterLocation": "NoSwingLossCounter.Counter",
+      "CounterLocation": "NoSwingLossCounter.NoSwingLossCounter",
       "ConfigDefaults": {
         "Enabled": true,
         "Position": "BelowMultiplier",
         "Distance": 1
       },
       "BSML": {
-        "Resource": "NoSwingLossCounter.BSML.BSMLViewController.bsml",
-        "Host": "NoSwingLossCounter.BSML.BSMLViewController",
+        "Resource": "NoSwingLossCounter.BSML.View.bsml",
+        "Host": "NoSwingLossCounter.BSML.Settings",
         "Icon": "NoSwingLossCounter.Resources.icon.png"
       }
     }

@@ -1,0 +1,3 @@
+﻿<vertical spacing="1" horizontal--fit="PreferredSize">
+	<checkbox-setting text="Separate Saber Percentage" value="separateSaber" hover-hint="Shows the per-saber no swing loss accuracy percentage" apply-on-change="true"></checkbox-setting>
+</vertical>

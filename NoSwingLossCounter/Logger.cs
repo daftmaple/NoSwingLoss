@@ -1,7 +1,9 @@
-﻿namespace NoSwingLossCounter
+﻿using IPALogger = IPA.Logging.Logger;
+
+namespace NoSwingLossCounter
 {
     internal static class Logger
     {
-        public static IPA.Logging.Logger log { get; set; }
+        public static IPALogger log { get; set; }
     }
 }

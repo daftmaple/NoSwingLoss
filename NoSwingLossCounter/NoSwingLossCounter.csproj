@@ -94,9 +94,11 @@
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.VRModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Zenject, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="Zenject-usage, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BSML\BSMLViewController.cs" />
+    <Compile Include="BSML\Settings.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="NoSwingLossCounter.cs" />
     <Compile Include="Plugin.cs" />
@@ -107,9 +109,7 @@
     <EmbeddedResource Include="manifest.json" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="BSML\BSMLViewController.bsml">
-      <DependentUpon>BSMLViewController.cs</DependentUpon>
-    </EmbeddedResource>
+    <EmbeddedResource Include="BSML\View.bsml" />
     <None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />
     <None Include="Directory.Build.targets" Condition="Exists('Directory.Build.targets')" />
     <None Include="NoSwingLossCounter.csproj.user" Condition="Exists('NoSwingLossCounter.csproj.user')" />

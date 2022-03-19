@@ -1,8 +1,0 @@
-﻿﻿<vertical xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd' spacing='1' horizontal-fit='PreferredSize' vertical-fit='PreferredSize'>
-	<checkbox-setting
-		text="Separate Saber Percentage"
-		value="separateSaber"
-		hover-hint="Shows the per-saber no swing loss accuracy percentage"
-		apply-on-change="true"
-	></checkbox-setting>
-</vertical>

@@ -4,9 +4,9 @@ using IPA.Config.Stores;
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
 namespace NoSwingLossCounter.Configuration
 {
-    internal class PluginConfig
+    class PluginConfig
     {
-        public static PluginConfig ConfigInstance { get; set; }
+        public static PluginConfig Instance { get; set; }
         public virtual bool separateSaber { get; set; } = false;
     }
 }

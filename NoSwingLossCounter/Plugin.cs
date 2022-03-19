@@ -1,5 +1,8 @@
 ﻿using IPA;
 using IPALogger = IPA.Logging.Logger;
+using IPA.Config.Stores;
+using Zenject;
+using NoSwingLossCounter.Configuration;
 
 namespace NoSwingLossCounter
 {
@@ -12,6 +15,7 @@ namespace NoSwingLossCounter
         [Init]
         public Plugin(IPALogger logger, IPA.Config.Config config)
         {
+            PluginConfig.Instance = config.Generated<PluginConfig>();
             Instance = this;
             Logger.log = logger;
             Logger.log.Debug("Logger for NoSwingLoss has been initialised.");
