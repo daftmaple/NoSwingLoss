@@ -4,18 +4,28 @@ using CountersPlus.Utils;
 using NoSwingLossCounter.Configuration;
 using TMPro;
 using UnityEngine;
+using Zenject;
 
 namespace NoSwingLossCounter
 {
-    class NoSwingLossCounter : BasicCustomCounter, INoteEventHandler
+    class NoSwingLossCounter : BasicCustomCounter
     {
         private TMP_Text _leftText;
         private TMP_Text _rightText;
         private TMP_Text _bottomText;
 
+        private readonly ScoreController scoreController;
+
+        public NoSwingLossCounter([Inject] ScoreController scoreController)
+        {
+            this.scoreController = scoreController;
+        }
+
         public override void CounterInit()
         {
             LabelInit();
+
+            scoreController.noteWasCutEvent += NoteWasCutEvent;
         }
 
         private void LabelInit()
@@ -70,21 +80,16 @@ namespace NoSwingLossCounter
         {
         }
 
-        public void OnNoteCut(NoteData data, NoteCutInfo info)
+        private void NoteWasCutEvent (NoteData noteData, in NoteCutInfo noteCutInfo, int multiplier)
         {
             ScoreModel.RawScoreWithoutMultiplier(
-                info.swingRatingCounter, 
-                info.cutDistanceToCenter, 
-                out int preCut, 
-                out int postCut, 
+                noteCutInfo.swingRatingCounter,
+                noteCutInfo.cutDistanceToCenter,
+                out int preCut,
+                out int postCut,
                 out int accCut
             );
-            ScoreHandler(preCut, postCut, accCut);
-        }
-
-        public void OnNoteMiss(NoteData data)
-        {
-            
+            ScoreHandler(preCut, postCut, multiplier);
         }
     }
 
