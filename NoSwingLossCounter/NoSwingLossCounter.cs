@@ -15,6 +15,7 @@ namespace NoSwingLossCounter
         private TMP_Text _bottomText;
 
         private readonly ScoreController scoreController;
+        private NoSwingLossCalculator calculator;
 
         public NoSwingLossCounter([Inject] ScoreController scoreController)
         {
@@ -24,8 +25,18 @@ namespace NoSwingLossCounter
         public override void CounterInit()
         {
             LabelInit();
+            calculator = new NoSwingLossCalculator();
 
             scoreController.noteWasCutEvent += NoteWasCutEvent;
+            scoreController.noteWasMissedEvent += NoteWasMissedEvent;
+        }
+
+        public override void CounterDestroy()
+        {
+            calculator = null;
+
+            scoreController.noteWasCutEvent -= NoteWasCutEvent;
+            scoreController.noteWasMissedEvent -= NoteWasMissedEvent;
         }
 
         private void LabelInit()
@@ -37,47 +48,51 @@ namespace NoSwingLossCounter
             Vector3 bottomOffset = Vector3.up * -0.2f;
             TextAlignmentOptions leftAlign = TextAlignmentOptions.Top;
             float bottomTextFontSize = 3.5f;
+            string bottomText = FormatToPercentage(1);
 
             if (PluginConfig.Instance.separateSaber)
             {
                 _leftText = CanvasUtility.CreateTextFromSettings(Settings, new Vector3(-0.3f, -0.25f, 0));
                 _leftText.lineSpacing = -26;
-                _leftText.text = "100%";
+                _leftText.text = FormatToPercentage(1);
                 _leftText.alignment = leftAlign;
                 _leftText.fontSize = 2.5f;
 
                 _rightText = CanvasUtility.CreateTextFromSettings(Settings, new Vector3(0.3f, -0.25f, 0));
                 _rightText.lineSpacing = -26;
-                _rightText.text = "100%";
+                _rightText.text = FormatToPercentage(1);
                 _rightText.alignment = TextAlignmentOptions.TopLeft;
                 _rightText.fontSize = 2.5f;
 
                 bottomOffset = Vector3.up * -0.6f;
                 bottomTextFontSize = 3f;
+                bottomText = FormatToPercentageBottomText(1);
             }
 
             _bottomText = CanvasUtility.CreateTextFromSettings(Settings, bottomOffset);
             _bottomText.lineSpacing = -26;
-            _bottomText.text = FormatBottomText("100%");
+            _bottomText.text = bottomText;
             _bottomText.alignment = TextAlignmentOptions.Top;
             _bottomText.fontSize = bottomTextFontSize;
         }
 
-        private string FormatBottomText(string text) => string.Format("({0})", text);
+        private string FormatToPercentage(double number) 
+            => string.Format("{0:N2}%", number * 100);
+        private string FormatToPercentageBottomText(double number) 
+            => string.Format("({0:N2}%)", number * 100);
 
-        public void ScoreHandler(int preCut, int postCut, int accCut)
+        private void RefreshText()
         {
-            _bottomText.text = string.Format("{0:N2}", accCut);
-
             if (PluginConfig.Instance.separateSaber)
             {
-                _leftText.text = string.Format("{0:N2}", preCut);
-                _rightText.text = string.Format("{0:N2}", postCut);
+                _leftText.text = FormatToPercentage(calculator.PercentageA);
+                _rightText.text = FormatToPercentage(calculator.PercentageB);
+                _bottomText.text = FormatToPercentageBottomText(calculator.Percentage);
             }
-        }
-
-        public override void CounterDestroy()
-        {
+            else
+            {
+                _bottomText.text = FormatToPercentage(calculator.Percentage);
+            }
         }
 
         private void NoteWasCutEvent (NoteData noteData, in NoteCutInfo noteCutInfo, int multiplier)
@@ -85,16 +100,78 @@ namespace NoSwingLossCounter
             ScoreModel.RawScoreWithoutMultiplier(
                 noteCutInfo.swingRatingCounter,
                 noteCutInfo.cutDistanceToCenter,
-                out int preCut,
-                out int postCut,
+                out int _,
+                out int _,
                 out int accCut
             );
-            ScoreHandler(preCut, postCut, multiplier);
+
+            calculator.AddScore(noteData.colorType, multiplier, accCut);
+            RefreshText();
+        }
+
+        private void NoteWasMissedEvent (NoteData noteData, int multiplier)
+        {
+            calculator.AddMaxScore(noteData.colorType, multiplier);
+            RefreshText();
         }
     }
 
     class NoSwingLossCalculator
     {
+        private int MaxScoreA { get; set; } = 0;
+        private int MaxScoreB { get; set; } = 0;
+        private int ScoreA { get; set; } = 0;
+        private int ScoreB { get; set; } = 0;
 
+        private int Score => ScoreA + ScoreB;
+        private int MaxScore => MaxScoreA + MaxScoreB;
+
+        public double PercentageA => DivideNonZero(ScoreA, MaxScoreA);
+        public double PercentageB => DivideNonZero(ScoreB, MaxScoreB);
+        public double Percentage => DivideNonZero(Score, MaxScore);
+
+        public void AddScore(ColorType colorType, int multiplier, int accCut)
+        {
+            int fullSwingCutScore = (100 + accCut) * multiplier;
+
+            switch (colorType)
+            {
+                case ColorType.ColorA:
+                    ScoreA += fullSwingCutScore;
+                    break;
+                case ColorType.ColorB:
+                    ScoreB += fullSwingCutScore;
+                    break;
+                case ColorType.None:
+                default:
+                    return;
+            }
+
+            AddMaxScore(colorType, multiplier);
+        }
+
+        public void AddMaxScore(ColorType colorType, int multiplier)
+        {
+            int maxCutScore = 115 * multiplier;
+
+            switch (colorType)
+            {
+                case ColorType.ColorA:
+                    MaxScoreA += maxCutScore;
+                    break;
+                case ColorType.ColorB:
+                    MaxScoreB += maxCutScore;
+                    break;
+                case ColorType.None:
+                default:
+                    return;
+            }
+        }
+
+        private double DivideNonZero(int dividend, int divisor)
+        {
+            if (divisor == 0) return 1;
+            return ((double)dividend / divisor);
+        }
     }
 }
