@@ -28,14 +28,12 @@ namespace NoSwingLossCounter
         {
             LabelInit();
 
-            scoreController.noteWasCutEvent += NoteWasCutEvent;
-            scoreController.noteWasMissedEvent += NoteWasMissedEvent;
+            scoreController.scoringForNoteFinishedEvent += ScoringForNoteFinishedEvent;
         }
 
         public override void CounterDestroy()
         {
-            scoreController.noteWasCutEvent -= NoteWasCutEvent;
-            scoreController.noteWasMissedEvent -= NoteWasMissedEvent;
+            scoreController.scoringForNoteFinishedEvent -= ScoringForNoteFinishedEvent;
         }
 
         private void LabelInit()
@@ -94,23 +92,9 @@ namespace NoSwingLossCounter
             }
         }
 
-        private void NoteWasCutEvent (NoteData noteData, in NoteCutInfo noteCutInfo, int multiplier)
+        private void ScoringForNoteFinishedEvent (ScoringElement scoringElement)
         {
-            ScoreModel.RawScoreWithoutMultiplier(
-                noteCutInfo.swingRatingCounter,
-                noteCutInfo.cutDistanceToCenter,
-                out int _,
-                out int _,
-                out int accCut
-            );
-
-            calculator.AddScore(noteData.colorType, multiplier, accCut);
-            RefreshText();
-        }
-
-        private void NoteWasMissedEvent (NoteData noteData, int multiplier)
-        {
-            calculator.AddMaxScore(noteData.colorType);
+            calculator.AddScore(scoringElement);
             RefreshText();
         }
     }
@@ -131,24 +115,53 @@ namespace NoSwingLossCounter
         public double PercentageB => DivideNonZero(ScoreB, MaxScoreB);
         public double Percentage => DivideNonZero(Score, MaxScore);
 
-        public void AddScore(ColorType colorType, int multiplier, int accCut)
+        public void AddScore(ScoringElement scoringElement)
         {
-            int fullSwingCutScore = (100 + accCut) * multiplier;
+            NoteData.ScoringType scoringType = scoringElement.noteData.scoringType;
+            ColorType colorType = scoringElement.noteData.colorType;
+            int multiplier = scoringElement.multiplier;
 
-            switch (colorType)
+            // https://stackoverflow.com/a/46409973
+            if (scoringElement is GoodCutScoringElement goodCutScoringElement)
             {
-                case ColorType.ColorA:
-                    ScoreA += fullSwingCutScore;
-                    break;
-                case ColorType.ColorB:
-                    ScoreB += fullSwingCutScore;
-                    break;
+                int fullSwingCutScore = 0;
+
+                // BurstSliderHead only cares about preswing and accuracy (total points = 85)
+                // BurstSliderElement has 20 points each
+                // SliderHead does not care about postswing (total points = 115)
+                // SliderTail does not care about preswing (total points = 115)
+                switch (scoringType)
+                {
+                    case NoteData.ScoringType.Normal:
+                    case NoteData.ScoringType.SliderHead:
+                    case NoteData.ScoringType.SliderTail:
+                        fullSwingCutScore = 
+                            (100 + goodCutScoringElement.cutScoreBuffer.centerDistanceCutScore) * multiplier;
+                        break;
+                    case NoteData.ScoringType.BurstSliderHead:
+                        fullSwingCutScore = 
+                            (70 + goodCutScoringElement.cutScoreBuffer.centerDistanceCutScore) * multiplier;
+                        break;
+                    case NoteData.ScoringType.BurstSliderElement:
+                        fullSwingCutScore = 20 * multiplier;
+                        break;
+                }
+
+                switch (colorType)
+                {
+                    case ColorType.ColorA:
+                        ScoreA += fullSwingCutScore;
+                        break;
+                    case ColorType.ColorB:
+                        ScoreB += fullSwingCutScore;
+                        break;
+                }
             }
 
-            AddMaxScore(colorType);
+            AddMaxScore(scoringType, colorType);
         }
 
-        public void AddMaxScore(ColorType colorType)
+        private void AddMaxScore(NoteData.ScoringType scoringType, ColorType colorType)
         {
             int multiplier = 8;
 
@@ -171,7 +184,19 @@ namespace NoSwingLossCounter
                 else multiplier = 4;
             }
 
-            int maxScore = 115 * multiplier;
+            int maxScoreOnScoreType = 115;
+
+            switch (scoringType)
+            {
+                case NoteData.ScoringType.BurstSliderHead:
+                    maxScoreOnScoreType = 85;
+                    break;
+                case NoteData.ScoringType.BurstSliderElement:
+                    maxScoreOnScoreType = 20;
+                    break;
+            }
+
+            int maxScore = maxScoreOnScoreType * multiplier;
 
             switch (colorType)
             {
