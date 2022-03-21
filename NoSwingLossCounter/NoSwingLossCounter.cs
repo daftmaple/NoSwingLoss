@@ -1,5 +1,4 @@
 ﻿using CountersPlus.Counters.Custom;
-using CountersPlus.Counters.Interfaces;
 using CountersPlus.Utils;
 using NoSwingLossCounter.Configuration;
 using TMPro;
@@ -15,17 +14,19 @@ namespace NoSwingLossCounter
         private TMP_Text _bottomText;
 
         private readonly ScoreController scoreController;
-        private NoSwingLossCalculator calculator;
+        private readonly NoSwingLossCalculator calculator;
 
-        public NoSwingLossCounter([Inject] ScoreController scoreController)
+        public NoSwingLossCounter(
+            [Inject] ScoreController scoreController
+        )
         {
             this.scoreController = scoreController;
+            this.calculator = new NoSwingLossCalculator();
         }
 
         public override void CounterInit()
         {
             LabelInit();
-            calculator = new NoSwingLossCalculator();
 
             scoreController.noteWasCutEvent += NoteWasCutEvent;
             scoreController.noteWasMissedEvent += NoteWasMissedEvent;
@@ -33,8 +34,6 @@ namespace NoSwingLossCounter
 
         public override void CounterDestroy()
         {
-            calculator = null;
-
             scoreController.noteWasCutEvent -= NoteWasCutEvent;
             scoreController.noteWasMissedEvent -= NoteWasMissedEvent;
         }
@@ -111,21 +110,23 @@ namespace NoSwingLossCounter
 
         private void NoteWasMissedEvent (NoteData noteData, int multiplier)
         {
-            calculator.AddMaxScore(noteData.colorType, multiplier);
+            calculator.AddMaxScore(noteData.colorType);
             RefreshText();
         }
     }
 
     class NoSwingLossCalculator
     {
+        private int NoteCountA { get; set; } = 0;
+        private int NoteCountB { get; set; } = 0;
+
         private int MaxScoreA { get; set; } = 0;
         private int MaxScoreB { get; set; } = 0;
         private int ScoreA { get; set; } = 0;
         private int ScoreB { get; set; } = 0;
-
+        private int NoteCount => NoteCountA + NoteCountB;
         private int Score => ScoreA + ScoreB;
         private int MaxScore => MaxScoreA + MaxScoreB;
-
         public double PercentageA => DivideNonZero(ScoreA, MaxScoreA);
         public double PercentageB => DivideNonZero(ScoreB, MaxScoreB);
         public double Percentage => DivideNonZero(Score, MaxScore);
@@ -142,29 +143,44 @@ namespace NoSwingLossCounter
                 case ColorType.ColorB:
                     ScoreB += fullSwingCutScore;
                     break;
-                case ColorType.None:
-                default:
-                    return;
             }
 
-            AddMaxScore(colorType, multiplier);
+            AddMaxScore(colorType);
         }
 
-        public void AddMaxScore(ColorType colorType, int multiplier)
+        public void AddMaxScore(ColorType colorType)
         {
-            int maxCutScore = 115 * multiplier;
+            int multiplier = 8;
+
+            // Add Note Count
+            switch (colorType)
+            {
+                case ColorType.ColorA:
+                    NoteCountA += 1;
+                    break;
+                case ColorType.ColorB:
+                    NoteCountB += 1;
+                    break;
+            }
+
+            // Only check if NoteCount is less than notecount on FC maximum multiplier
+            if (NoteCount < 14)
+            {
+                if (NoteCount == 1) multiplier = 1;
+                else if (NoteCount < 6) multiplier = 2;
+                else multiplier = 4;
+            }
+
+            int maxScore = 115 * multiplier;
 
             switch (colorType)
             {
                 case ColorType.ColorA:
-                    MaxScoreA += maxCutScore;
+                    MaxScoreA += maxScore;
                     break;
                 case ColorType.ColorB:
-                    MaxScoreB += maxCutScore;
+                    MaxScoreB += maxScore;
                     break;
-                case ColorType.None:
-                default:
-                    return;
             }
         }
 
