@@ -96,21 +96,13 @@ namespace NoSwingLossCounter
 
         private void NoteWasCutEvent (NoteData noteData, in NoteCutInfo noteCutInfo, int multiplier)
         {
-            ScoreModel.RawScoreWithoutMultiplier(
-                noteCutInfo.swingRatingCounter,
-                noteCutInfo.cutDistanceToCenter,
-                out int _,
-                out int _,
-                out int accCut
-            );
-
-            calculator.AddScore(noteData.colorType, multiplier, accCut);
+            calculator.AddScore(noteData, noteCutInfo, multiplier);
             RefreshText();
         }
 
         private void NoteWasMissedEvent (NoteData noteData, int multiplier)
         {
-            calculator.AddMaxScore(noteData.colorType);
+            calculator.AddMaxScore(noteData);
             RefreshText();
         }
     }
@@ -131,11 +123,19 @@ namespace NoSwingLossCounter
         public double PercentageB => DivideNonZero(ScoreB, MaxScoreB);
         public double Percentage => DivideNonZero(Score, MaxScore);
 
-        public void AddScore(ColorType colorType, int multiplier, int accCut)
+        public void AddScore(NoteData noteData, NoteCutInfo noteCutInfo, int multiplier)
         {
+            ScoreModel.RawScoreWithoutMultiplier(
+                noteCutInfo.swingRatingCounter,
+                noteCutInfo.cutDistanceToCenter,
+                out int _,
+                out int _,
+                out int accCut
+            );
+
             int fullSwingCutScore = (100 + accCut) * multiplier;
 
-            switch (colorType)
+            switch (noteData.colorType)
             {
                 case ColorType.ColorA:
                     ScoreA += fullSwingCutScore;
@@ -145,15 +145,15 @@ namespace NoSwingLossCounter
                     break;
             }
 
-            AddMaxScore(colorType);
+            AddMaxScore(noteData);
         }
 
-        public void AddMaxScore(ColorType colorType)
+        public void AddMaxScore(NoteData noteData)
         {
             int multiplier = 8;
 
             // Add Note Count
-            switch (colorType)
+            switch (noteData.colorType)
             {
                 case ColorType.ColorA:
                     NoteCountA += 1;
@@ -173,7 +173,7 @@ namespace NoSwingLossCounter
 
             int maxScore = 115 * multiplier;
 
-            switch (colorType)
+            switch (noteData.colorType)
             {
                 case ColorType.ColorA:
                     MaxScoreA += maxScore;
