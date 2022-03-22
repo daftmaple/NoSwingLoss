@@ -145,14 +145,8 @@ namespace NoSwingLossCounter
                             (100 + goodCutScoringElement.cutScoreBuffer.centerDistanceCutScore) * multiplier;
                         break;
                     case NoteData.ScoringType.BurstSliderHead:
-                        if (!PluginConfig.Instance.normalArrowedLink)
+                        if (!PluginConfig.Instance.normaliseArrowedLink)
                         {
-                            fullSwingCutScore =
-                        fullSwingCutScore = 
-                            fullSwingCutScore =
-                        fullSwingCutScore = 
-                            fullSwingCutScore =
-                        fullSwingCutScore = 
                             fullSwingCutScore =
                                 (70 + goodCutScoringElement.cutScoreBuffer.centerDistanceCutScore) * multiplier;
                         }
@@ -211,7 +205,7 @@ namespace NoSwingLossCounter
             {
                 case NoteData.ScoringType.BurstSliderHead:
                     // Max score is 85 if arrowed link is not treated as normal note
-                    if (!PluginConfig.Instance.normalArrowedLink) maxScoreOnScoreType = 85;
+                    if (!PluginConfig.Instance.normaliseArrowedLink) maxScoreOnScoreType = 85;
                     break;
                 case NoteData.ScoringType.BurstSliderElement:
                     maxScoreOnScoreType = 20;
