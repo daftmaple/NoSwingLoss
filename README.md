@@ -7,3 +7,7 @@ CountersPlus custom counter to show your percentage if you were fullswinging.
 This mod also supports split value for each hands which can be configured on CountersPlus.
 
 ![No Swing Loss Counter, with value split between each hands](Resources/Split.png)
+
+## Bug or feature request
+
+[Go here](https://github.com/daftmaple/NoSwingLoss/issues/new/choose)
