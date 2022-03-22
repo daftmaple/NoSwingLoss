@@ -127,8 +127,8 @@ namespace NoSwingLossCounter
                 return;
             }
 
-                // https://stackoverflow.com/a/46409973
-                if (scoringElement is GoodCutScoringElement goodCutScoringElement)
+            // https://stackoverflow.com/a/46409973
+            if (scoringElement is GoodCutScoringElement goodCutScoringElement)
             {
                 int fullSwingCutScore = 0;
 
