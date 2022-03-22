@@ -1,3 +1,20 @@
 ﻿<vertical spacing="1" horizontal--fit="PreferredSize">
-	<checkbox-setting text="Separate Saber Percentage" value="separateSaber" hover-hint="Shows the per-saber no swing loss accuracy percentage" apply-on-change="true"></checkbox-setting>
+	<checkbox-setting 
+		text="Separate Saber Percentage" 
+		value="separateSaber" 
+		hover-hint="Shows the per-saber no swing loss accuracy percentage" 
+		apply-on-change="true"
+	/>
+	<checkbox-setting 
+		text="Exclude dotted chain notes" 
+		value="excludeDottedLink" 
+		hover-hint="Exclude dotted link (tail) on chain notes from accuracy percentage calculation" 
+		apply-on-change="true"
+	/>
+	<checkbox-setting 
+		text="Assume normal note on arrowed chain notes" 
+		value="normalArrowedLink" 
+		hover-hint="Treats arrowed link (head) on chain notes as normal note, hence calculates accuracy on base 115 instead of 85" 
+		apply-on-change="true"
+	/>
 </vertical>
