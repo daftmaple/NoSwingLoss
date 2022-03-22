@@ -121,6 +121,12 @@ namespace NoSwingLossCounter
             ColorType colorType = scoringElement.noteData.colorType;
             int multiplier = scoringElement.multiplier;
 
+            if (scoringType == NoteData.ScoringType.BurstSliderElement && PluginConfig.Instance.excludeDottedLink)
+            {
+                // Exclude dotted link (burst slider element) from calculation
+                return;
+            }
+
             // https://stackoverflow.com/a/46409973
             if (scoringElement is GoodCutScoringElement goodCutScoringElement)
             {
@@ -139,8 +145,17 @@ namespace NoSwingLossCounter
                             (100 + goodCutScoringElement.cutScoreBuffer.centerDistanceCutScore) * multiplier;
                         break;
                     case NoteData.ScoringType.BurstSliderHead:
-                        fullSwingCutScore = 
-                            (70 + goodCutScoringElement.cutScoreBuffer.centerDistanceCutScore) * multiplier;
+                        if (!PluginConfig.Instance.normaliseArrowedLink)
+                        {
+                            fullSwingCutScore =
+                                (70 + goodCutScoringElement.cutScoreBuffer.centerDistanceCutScore) * multiplier;
+                        }
+                        else
+                        {
+                            // Assume postswing exists on chain head since it is treated as normal note
+                            fullSwingCutScore =
+                                (100 + goodCutScoringElement.cutScoreBuffer.centerDistanceCutScore) * multiplier;
+                        }
                         break;
                     case NoteData.ScoringType.BurstSliderElement:
                         fullSwingCutScore = 20 * multiplier;
@@ -163,8 +178,6 @@ namespace NoSwingLossCounter
 
         private void AddMaxScore(NoteData.ScoringType scoringType, ColorType colorType)
         {
-            int multiplier = 8;
-
             // Add Note Count
             switch (colorType)
             {
@@ -175,6 +188,8 @@ namespace NoSwingLossCounter
                     NoteCountB += 1;
                     break;
             }
+
+            int multiplier = 8;
 
             // Only check if NoteCount is less than notecount on FC maximum multiplier
             if (NoteCount < 14)
@@ -189,7 +204,8 @@ namespace NoSwingLossCounter
             switch (scoringType)
             {
                 case NoteData.ScoringType.BurstSliderHead:
-                    maxScoreOnScoreType = 85;
+                    // Max score is 85 if arrowed link is not treated as normal note
+                    if (!PluginConfig.Instance.normaliseArrowedLink) maxScoreOnScoreType = 85;
                     break;
                 case NoteData.ScoringType.BurstSliderElement:
                     maxScoreOnScoreType = 20;

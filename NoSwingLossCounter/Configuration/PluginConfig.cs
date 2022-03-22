@@ -8,5 +8,7 @@ namespace NoSwingLossCounter.Configuration
     {
         public static PluginConfig Instance { get; set; }
         public virtual bool separateSaber { get; set; } = false;
+        public virtual bool excludeDottedLink { get; set; } = false; 
+        public virtual bool normaliseArrowedLink { get; set; } = false;
     }
 }

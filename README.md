@@ -8,6 +8,14 @@ This mod also supports split value for each hands which can be configured on Cou
 
 ![No Swing Loss Counter, with value split between each hands](Resources/Split.png)
 
+## Counters options
+
+| Option                                    | Description                                                                                                                                      |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Separate Saber                            | Shows no swing loss accuracy percentage for each saber (shown as separate value)                                                                 |
+| Exclude dotted chain notes                | Excludes dotted chain notes (tail) from accuracy percentage calculation                                                                          |
+| Assume normal note on arrowed chain notes | Treats arrowed chain notes (head) as normal note, hence it has assumed postswing (treated as a note with maximum accuracy of 115 instead of 85). |
+
 ## Bug or feature request
 
 [Go here](https://github.com/daftmaple/NoSwingLoss/issues/new/choose)
