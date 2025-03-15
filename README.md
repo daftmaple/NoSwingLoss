@@ -10,10 +10,11 @@ This mod also supports split value for each hands which can be configured on Cou
 
 ## Counters options
 
-| Option                     | Description                                                                      |
-| -------------------------- | -------------------------------------------------------------------------------- |
-| Separate Saber             | Shows no swing loss accuracy percentage for each saber (shown as separate value) |
-| Exclude dotted chain notes | Excludes dotted chain notes (tail) from accuracy percentage calculation          |
+| Option                                             | Description                                                                                              |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Separate Saber                                     | Shows no swing loss accuracy percentage for each saber (shown as separate value)                         |
+| Exclude dotted chain notes                         | Excludes dotted chain notes (tail) from accuracy percentage calculation                                  |
+| Exclude multiplier on swing percentage calculation | Exclude multiplier on notes on higher multiplier (x2, x4, x8 are weighted equally as x1 if this is true) |
 
 ## Development
 
@@ -31,6 +32,8 @@ v1.0.2
 
 - Removed arrowed chain notes normalisation
 - Added support for different scoring model
+- Added toggle for multiplier exclusion on calculating max score
+- Set separate saber setting to default to true
 
 v1.0.1
 

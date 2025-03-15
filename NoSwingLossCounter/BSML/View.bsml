@@ -11,4 +11,10 @@
 		hover-hint="Exclude dotted link (tail) on chain notes from accuracy percentage calculation" 
 		apply-on-change="true"
 	/>
+	<checkbox-setting
+		text="Exclude multiplier"
+		value="excludeMultiplier"
+		hover-hint="Exclude multiplier on swing percentage calculation"
+		apply-on-change="true"
+	/>
 </vertical>

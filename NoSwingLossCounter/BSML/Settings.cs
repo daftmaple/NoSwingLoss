@@ -18,5 +18,12 @@ namespace NoSwingLossCounter.BSML
             get => PluginConfig.Instance.excludeDottedLink;
             set => PluginConfig.Instance.excludeDottedLink = value;
         }
+
+        [UIValue("excludeMultiplier")]
+        public bool excludeMultiplier
+        {
+            get => PluginConfig.Instance.excludeMultiplier;
+            set => PluginConfig.Instance.excludeMultiplier = value;
+        }
     }
 }

@@ -119,7 +119,9 @@ namespace NoSwingLossCounter
         {
             NoteData.ScoringType scoringType = scoringElement.noteData.scoringType;
             ColorType colorType = scoringElement.noteData.colorType;
-            int multiplier = scoringElement.multiplier;
+
+            // Ignore multiplier if excludeMultiplier is true
+            int multiplier = PluginConfig.Instance.excludeMultiplier ? 1 : scoringElement.multiplier;
 
             if (scoringType == NoteData.ScoringType.BurstSliderElement && PluginConfig.Instance.excludeDottedLink)
             {
@@ -132,7 +134,7 @@ namespace NoSwingLossCounter
             {
                 int fullSwingCutScore = 0;
 
-                var scoring = ScoreModel.GetNoteScoreDefinition(scoringType);
+                ScoreModel.NoteScoreDefinition scoring = ScoreModel.GetNoteScoreDefinition(scoringType);
 
                 // BurstSliderHead only cares about preswing and accuracy (total points = 85)
                 // BurstSliderElement has 20 points each
@@ -181,15 +183,20 @@ namespace NoSwingLossCounter
 
             int multiplier = 8;
 
-            // Only check if NoteCount is less than notecount on FC maximum multiplier
-            if (NoteCount < 14)
+            if (PluginConfig.Instance.excludeMultiplier)
             {
+                multiplier = 1;
+                
+            } else {
+                // TODO: check if there is any other way to obtain multiplier
+                // Only check if NoteCount is less than notecount on FC maximum multiplier
                 if (NoteCount == 1) multiplier = 1;
                 else if (NoteCount < 6) multiplier = 2;
-                else multiplier = 4;
+                else if (NoteCount < 14) multiplier = 4;
+                else multiplier = 8;
             }
 
-            var scoring = ScoreModel.GetNoteScoreDefinition(scoringType);
+            ScoreModel.NoteScoreDefinition scoring = ScoreModel.GetNoteScoreDefinition(scoringType);
             int maxScoreOnScoreType = scoring.maxCutScore;
 
             int maxScore = maxScoreOnScoreType * multiplier;
