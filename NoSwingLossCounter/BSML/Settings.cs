@@ -18,12 +18,5 @@ namespace NoSwingLossCounter.BSML
             get => PluginConfig.Instance.excludeDottedLink;
             set => PluginConfig.Instance.excludeDottedLink = value;
         }
-
-        [UIValue("normaliseArrowedLink")]
-        public bool normaliseArrowedLink
-        {
-            get => PluginConfig.Instance.normaliseArrowedLink;
-            set => PluginConfig.Instance.normaliseArrowedLink = value;
-        }
     }
 }

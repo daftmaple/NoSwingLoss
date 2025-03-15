@@ -132,6 +132,8 @@ namespace NoSwingLossCounter
             {
                 int fullSwingCutScore = 0;
 
+                var scoring = ScoreModel.GetNoteScoreDefinition(scoringType);
+
                 // BurstSliderHead only cares about preswing and accuracy (total points = 85)
                 // BurstSliderElement has 20 points each
                 // SliderHead does not care about postswing (total points = 115)
@@ -141,24 +143,12 @@ namespace NoSwingLossCounter
                     case NoteData.ScoringType.Normal:
                     case NoteData.ScoringType.SliderHead:
                     case NoteData.ScoringType.SliderTail:
-                        fullSwingCutScore = 
-                            (100 + goodCutScoringElement.cutScoreBuffer.centerDistanceCutScore) * multiplier;
-                        break;
                     case NoteData.ScoringType.BurstSliderHead:
-                        if (!PluginConfig.Instance.normaliseArrowedLink)
-                        {
-                            fullSwingCutScore =
-                                (70 + goodCutScoringElement.cutScoreBuffer.centerDistanceCutScore) * multiplier;
-                        }
-                        else
-                        {
-                            // Assume postswing exists on chain head since it is treated as normal note
-                            fullSwingCutScore =
-                                (100 + goodCutScoringElement.cutScoreBuffer.centerDistanceCutScore) * multiplier;
-                        }
+                        fullSwingCutScore = 
+                            (scoring.maxBeforeCutScore + scoring.maxAfterCutScore + goodCutScoringElement.cutScoreBuffer.centerDistanceCutScore) * multiplier;
                         break;
                     case NoteData.ScoringType.BurstSliderElement:
-                        fullSwingCutScore = 20 * multiplier;
+                        fullSwingCutScore = scoring.fixedCutScore * multiplier;
                         break;
                 }
 
@@ -199,18 +189,8 @@ namespace NoSwingLossCounter
                 else multiplier = 4;
             }
 
-            int maxScoreOnScoreType = 115;
-
-            switch (scoringType)
-            {
-                case NoteData.ScoringType.BurstSliderHead:
-                    // Max score is 85 if arrowed link is not treated as normal note
-                    if (!PluginConfig.Instance.normaliseArrowedLink) maxScoreOnScoreType = 85;
-                    break;
-                case NoteData.ScoringType.BurstSliderElement:
-                    maxScoreOnScoreType = 20;
-                    break;
-            }
+            var scoring = ScoreModel.GetNoteScoreDefinition(scoringType);
+            int maxScoreOnScoreType = scoring.maxCutScore;
 
             int maxScore = maxScoreOnScoreType * multiplier;
 
