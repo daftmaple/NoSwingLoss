@@ -1,7 +1,6 @@
 ﻿using IPA;
 using IPALogger = IPA.Logging.Logger;
 using IPA.Config.Stores;
-using Zenject;
 using NoSwingLossCounter.Configuration;
 
 namespace NoSwingLossCounter

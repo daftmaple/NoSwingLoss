@@ -13,27 +13,21 @@ namespace NoSwingLossCounter
         private TMP_Text _rightText;
         private TMP_Text _bottomText;
 
-        private readonly ScoreController scoreController;
-        private readonly NoSwingLossCalculator calculator;
-
-        public NoSwingLossCounter(
-            [Inject] ScoreController scoreController
-        )
-        {
-            this.scoreController = scoreController;
-            this.calculator = new NoSwingLossCalculator();
-        }
+        [Inject] private readonly ScoreController _scoreController;
+        private NoSwingLossCalculator _calculator;
 
         public override void CounterInit()
         {
+            // Instantiate new calculator when initialising counter
+            _calculator = new NoSwingLossCalculator();
             LabelInit();
 
-            scoreController.scoringForNoteFinishedEvent += ScoringForNoteFinishedEvent;
+            _scoreController.scoringForNoteFinishedEvent += ScoringForNoteFinishedEvent;
         }
 
         public override void CounterDestroy()
         {
-            scoreController.scoringForNoteFinishedEvent -= ScoringForNoteFinishedEvent;
+            _scoreController.scoringForNoteFinishedEvent -= ScoringForNoteFinishedEvent;
         }
 
         private void LabelInit()
@@ -82,19 +76,19 @@ namespace NoSwingLossCounter
         {
             if (PluginConfig.Instance.separateSaber)
             {
-                _leftText.text = FormatToPercentage(calculator.PercentageA);
-                _rightText.text = FormatToPercentage(calculator.PercentageB);
-                _bottomText.text = FormatToPercentageBottomText(calculator.Percentage);
+                _leftText.text = FormatToPercentage(_calculator.PercentageA);
+                _rightText.text = FormatToPercentage(_calculator.PercentageB);
+                _bottomText.text = FormatToPercentageBottomText(_calculator.Percentage);
             }
             else
             {
-                _bottomText.text = FormatToPercentage(calculator.Percentage);
+                _bottomText.text = FormatToPercentage(_calculator.Percentage);
             }
         }
 
         private void ScoringForNoteFinishedEvent (ScoringElement scoringElement)
         {
-            calculator.AddScore(scoringElement);
+            _calculator.AddScore(scoringElement);
             RefreshText();
         }
     }
@@ -119,7 +113,9 @@ namespace NoSwingLossCounter
         {
             NoteData.ScoringType scoringType = scoringElement.noteData.scoringType;
             ColorType colorType = scoringElement.noteData.colorType;
-            int multiplier = scoringElement.multiplier;
+
+            // Ignore multiplier if excludeMultiplier is true
+            int multiplier = PluginConfig.Instance.excludeMultiplier ? 1 : scoringElement.multiplier;
 
             if (scoringType == NoteData.ScoringType.BurstSliderElement && PluginConfig.Instance.excludeDottedLink)
             {
@@ -132,6 +128,8 @@ namespace NoSwingLossCounter
             {
                 int fullSwingCutScore = 0;
 
+                ScoreModel.NoteScoreDefinition scoring = ScoreModel.GetNoteScoreDefinition(scoringType);
+
                 // BurstSliderHead only cares about preswing and accuracy (total points = 85)
                 // BurstSliderElement has 20 points each
                 // SliderHead does not care about postswing (total points = 115)
@@ -141,24 +139,12 @@ namespace NoSwingLossCounter
                     case NoteData.ScoringType.Normal:
                     case NoteData.ScoringType.SliderHead:
                     case NoteData.ScoringType.SliderTail:
-                        fullSwingCutScore = 
-                            (100 + goodCutScoringElement.cutScoreBuffer.centerDistanceCutScore) * multiplier;
-                        break;
                     case NoteData.ScoringType.BurstSliderHead:
-                        if (!PluginConfig.Instance.normaliseArrowedLink)
-                        {
-                            fullSwingCutScore =
-                                (70 + goodCutScoringElement.cutScoreBuffer.centerDistanceCutScore) * multiplier;
-                        }
-                        else
-                        {
-                            // Assume postswing exists on chain head since it is treated as normal note
-                            fullSwingCutScore =
-                                (100 + goodCutScoringElement.cutScoreBuffer.centerDistanceCutScore) * multiplier;
-                        }
+                        fullSwingCutScore = 
+                            (scoring.maxBeforeCutScore + scoring.maxAfterCutScore + goodCutScoringElement.cutScoreBuffer.centerDistanceCutScore) * multiplier;
                         break;
                     case NoteData.ScoringType.BurstSliderElement:
-                        fullSwingCutScore = 20 * multiplier;
+                        fullSwingCutScore = scoring.fixedCutScore * multiplier;
                         break;
                 }
 
@@ -191,26 +177,21 @@ namespace NoSwingLossCounter
 
             int multiplier = 8;
 
-            // Only check if NoteCount is less than notecount on FC maximum multiplier
-            if (NoteCount < 14)
+            if (PluginConfig.Instance.excludeMultiplier)
             {
+                multiplier = 1;
+                
+            } else {
+                // TODO: check if there is any other way to obtain multiplier
+                // Only check if NoteCount is less than notecount on FC maximum multiplier
                 if (NoteCount == 1) multiplier = 1;
                 else if (NoteCount < 6) multiplier = 2;
-                else multiplier = 4;
+                else if (NoteCount < 14) multiplier = 4;
+                else multiplier = 8;
             }
 
-            int maxScoreOnScoreType = 115;
-
-            switch (scoringType)
-            {
-                case NoteData.ScoringType.BurstSliderHead:
-                    // Max score is 85 if arrowed link is not treated as normal note
-                    if (!PluginConfig.Instance.normaliseArrowedLink) maxScoreOnScoreType = 85;
-                    break;
-                case NoteData.ScoringType.BurstSliderElement:
-                    maxScoreOnScoreType = 20;
-                    break;
-            }
+            ScoreModel.NoteScoreDefinition scoring = ScoreModel.GetNoteScoreDefinition(scoringType);
+            int maxScoreOnScoreType = scoring.maxCutScore;
 
             int maxScore = maxScoreOnScoreType * multiplier;
 
