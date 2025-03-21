@@ -13,27 +13,21 @@ namespace NoSwingLossCounter
         private TMP_Text _rightText;
         private TMP_Text _bottomText;
 
-        private readonly ScoreController scoreController;
-        private readonly NoSwingLossCalculator calculator;
-
-        public NoSwingLossCounter(
-            [Inject] ScoreController scoreController
-        )
-        {
-            this.scoreController = scoreController;
-            this.calculator = new NoSwingLossCalculator();
-        }
+        [Inject] private readonly ScoreController _scoreController;
+        private NoSwingLossCalculator _calculator;
 
         public override void CounterInit()
         {
+            // Instantiate new calculator when initialising counter
+            _calculator = new NoSwingLossCalculator();
             LabelInit();
 
-            scoreController.scoringForNoteFinishedEvent += ScoringForNoteFinishedEvent;
+            _scoreController.scoringForNoteFinishedEvent += ScoringForNoteFinishedEvent;
         }
 
         public override void CounterDestroy()
         {
-            scoreController.scoringForNoteFinishedEvent -= ScoringForNoteFinishedEvent;
+            _scoreController.scoringForNoteFinishedEvent -= ScoringForNoteFinishedEvent;
         }
 
         private void LabelInit()
@@ -82,19 +76,19 @@ namespace NoSwingLossCounter
         {
             if (PluginConfig.Instance.separateSaber)
             {
-                _leftText.text = FormatToPercentage(calculator.PercentageA);
-                _rightText.text = FormatToPercentage(calculator.PercentageB);
-                _bottomText.text = FormatToPercentageBottomText(calculator.Percentage);
+                _leftText.text = FormatToPercentage(_calculator.PercentageA);
+                _rightText.text = FormatToPercentage(_calculator.PercentageB);
+                _bottomText.text = FormatToPercentageBottomText(_calculator.Percentage);
             }
             else
             {
-                _bottomText.text = FormatToPercentage(calculator.Percentage);
+                _bottomText.text = FormatToPercentage(_calculator.Percentage);
             }
         }
 
         private void ScoringForNoteFinishedEvent (ScoringElement scoringElement)
         {
-            calculator.AddScore(scoringElement);
+            _calculator.AddScore(scoringElement);
             RefreshText();
         }
     }
